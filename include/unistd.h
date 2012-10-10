@@ -274,6 +274,7 @@ extern int eaccess (__const char *__name, int __type)
    otherwise use real IDs like `access'.  */
 extern int faccessat (int __fd, __const char *__file, int __type, int __flag)
      __THROW __nonnull ((2)) __wur;
+libc_hidden_proto(faccessat)
 #endif /* Use GNU.  */
 
 
