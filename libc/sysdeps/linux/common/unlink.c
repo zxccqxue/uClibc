@@ -8,8 +8,16 @@
  */
 
 #include <sys/syscall.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 
+#if defined(__NR_unlinkat) && !defined(__NR_unlink)
+int unlink(const char *pathname)
+{
+	return unlinkat(AT_FDCWD, pathname, 0);
+}
+#else
 _syscall1(int, unlink, const char *, pathname)
+#endif
 libc_hidden_def(unlink)
