@@ -8,7 +8,15 @@
  */
 
 #include <sys/syscall.h>
+#include <fcntl.h>
 #include <unistd.h>
 
+#if defined(__NR_readlinkat) && !defined(__NR_readlink)
+ssize_t readlink (const char *path, char *buf, size_t len)
+{
+	return readlinkat(AT_FDCWD, path, buf, len);
+}
+#else
 _syscall3(ssize_t, readlink, const char *, path, char *, buf, size_t, bufsiz)
+#endif
 libc_hidden_def(readlink)
