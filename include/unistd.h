@@ -860,6 +860,7 @@ libc_hidden_proto(unlink)
 /* Remove the link NAME relative to FD.  */
 extern int unlinkat (int __fd, __const char *__name, int __flag)
      __THROW __nonnull ((2));
+libc_hidden_proto(unlinkat)
 #endif
 
 /* Remove the directory PATH.  */
