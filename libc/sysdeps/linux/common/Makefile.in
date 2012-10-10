@@ -65,7 +65,7 @@ CSRC-$(if $(findstring yy,$(UCLIBC_LINUX_SPECIFIC)$(UCLIBC_HAS_LFS)),y) += \
 # NPTL needs these internally: madvise.c
 CSRC-$(findstring y,$(UCLIBC_LINUX_SPECIFIC)$(UCLIBC_HAS_THREADS_NATIVE)) += madvise.c
 ifeq ($(UCLIBC_HAS_THREADS_NATIVE),y)
-CSRC- += fork.c getpid.c raise.c open.c openat.c close.c read.c write.c
+CSRC- += fork.c getpid.c raise.c openat.c close.c read.c write.c
 CSRC- += $(if $(findstring =arm=,=$(TARGET_ARCH)=),vfork.c)
 CSRC- += $(if $(findstring =x86_64=,=$(TARGET_ARCH)=),vfork.c)
 CSRC- += $(if $(findstring =mips=y=,=$(TARGET_ARCH)=$(CONFIG_MIPS_O32_ABI)=),waitpid.c)
