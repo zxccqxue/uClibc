@@ -823,6 +823,7 @@ extern int link (__const char *__from, __const char *__to)
 extern int linkat (int __fromfd, __const char *__from, int __tofd,
 		   __const char *__to, int __flags)
      __THROW __nonnull ((2, 4)) __wur;
+libc_hidden_proto(linkat)
 #endif
 
 #if defined __USE_BSD || defined __USE_XOPEN_EXTENDED || defined __USE_XOPEN2K
