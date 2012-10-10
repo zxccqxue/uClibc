@@ -9,7 +9,14 @@
 
 #include <sys/syscall.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
+#if defined(__NR_mknodat) && !defined(__NR_mknod)
+int mknod(const char *path, mode_t mode, dev_t dev)
+{
+	return mknodat(AT_FDCWD, path, mode, dev);
+}
+#else
 int mknod(const char *path, mode_t mode, dev_t dev)
 {
 	unsigned long long int k_dev;
@@ -19,4 +26,5 @@ int mknod(const char *path, mode_t mode, dev_t dev)
 
 	return INLINE_SYSCALL(mknod, 3, path, mode, (unsigned int)k_dev);
 }
+#endif
 libc_hidden_def(mknod)
