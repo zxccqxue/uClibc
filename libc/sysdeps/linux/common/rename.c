@@ -8,11 +8,18 @@
  */
 
 #include <sys/syscall.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/param.h>
 #include <stdio.h>
 
+#if defined(__NR_renameat) && !defined(__NR_rename)
+int rename(const char *oldpath, const char *newpath)
+{
+	return renameat(AT_FDCWD, oldpath, AT_FDCWD, newpath);
+}
+#else
 #define __NR___syscall_rename __NR_rename
 static __inline__ _syscall2(int, __syscall_rename, const char *, oldpath,
 		const char *, newpath)
@@ -21,4 +28,4 @@ int rename(const char * oldpath, const char * newpath)
 {
 	return __syscall_rename(oldpath, newpath);
 }
-
+#endif
