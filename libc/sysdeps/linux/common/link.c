@@ -8,5 +8,14 @@
  */
 
 #include <sys/syscall.h>
+#include <fcntl.h>
 #include <unistd.h>
+
+#if defined(__NR_linkat) && !defined(__NR_link)
+int link(const char *oldpath, const char *newpath)
+{
+	return linkat(AT_FDCWD, oldpath, AT_FDCWD, newpath, 0);
+}
+#else
 _syscall2(int, link, const char *, oldpath, const char *, newpath)
+#endif
