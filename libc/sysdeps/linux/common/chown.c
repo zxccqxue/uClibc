@@ -8,9 +8,17 @@
  */
 
 #include <sys/syscall.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <bits/wordsize.h>
 
+#if defined(__NR_fchownat) && !defined(__NR_chown)
+int chown(const char *path, uid_t owner, gid_t group)
+{
+	return fchownat(AT_FDCWD, path, owner, group, 0);
+}
+
+#else
 
 #if (__WORDSIZE == 32 && defined(__NR_chown32)) || __WORDSIZE == 64
 # ifdef __NR_chown32
@@ -37,4 +45,5 @@ int chown(const char *path, uid_t owner, gid_t group)
 }
 #endif
 
+#endif
 libc_hidden_def(chown)
