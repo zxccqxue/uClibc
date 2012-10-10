@@ -115,9 +115,10 @@ libpthread_hidden_def(nanosleep)
 
 
 /* open(2).  */
+#if !defined(__NR_openat) && defined(__NR_open)
 CANCELABLE_SYSCALL_VA (int, open, (const char *pathname, int flags, ...),
 		       (pathname, flags, va_arg (ap, mode_t)), flags)
-
+#endif
 
 #ifdef __UCLIBC_HAS_LFS__
 /* open64(3).  */
