@@ -8,8 +8,17 @@
  */
 
 #include <sys/syscall.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <bits/wordsize.h>
+
+#if defined(__NR_fchownat) && !defined(__NR_lchown)
+int lchown(const char *path, uid_t owner, gid_t group)
+{
+	return fchownat(AT_FDCWD, path, owner, group, AT_SYMLINK_NOFOLLOW);
+}
+
+#else
 
 #if (__WORDSIZE == 32 && defined(__NR_lchown32)) || __WORDSIZE == 64
 # ifdef __NR_lchown32
@@ -34,5 +43,7 @@ int lchown(const char *path, uid_t owner, gid_t group)
 	}
 	return __syscall_lchown(path, owner, group);
 }
+
+#endif
 
 #endif
