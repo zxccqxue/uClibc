@@ -105,7 +105,7 @@ make_stub(fdatasync)
 make_stub(flistxattr)
 #endif
 
-#ifndef __NR_fork
+#if !defined(__NR_fork) && !defined(__NR_clone)
 make_stub(fork)
 #endif
 
