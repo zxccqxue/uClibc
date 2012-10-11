@@ -16,17 +16,25 @@
 #endif
 
 /*
- * epoll_create()
- */
-#ifdef __NR_epoll_create
-_syscall1(int, epoll_create, int, size)
-#endif
-
-/*
  * epoll_create1()
  */
-#ifdef __NR_epoll_create1
+#if defined(__NR_epoll_create1)
 _syscall1(int, epoll_create1, int, flags)
+#endif
+
+#if defined(__NR_epoll_create1) && !defined(__NR_epoll_create)
+int epoll_create(int size)
+{
+	return INLINE_SYSCALL(epoll_create1, 1, 0);
+}
+
+/*
+ * epoll_create()
+ */
+
+/* For systems that have both, prefer the old one */
+#elif defined(__NR_epoll_create)
+_syscall1(int, epoll_create, int, size)
 #endif
 
 /*
