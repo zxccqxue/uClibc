@@ -11,12 +11,18 @@
 #include <sys/syscall.h>
 #include <sys/inotify.h>
 
-#ifdef __NR_inotify_init
-_syscall0(int, inotify_init)
+#if defined(__NR_inotify_init1)
+_syscall1(int, inotify_init1, int, flags)
 #endif
 
-#ifdef __NR_inotify_init1
-_syscall1(int, inotify_init1, int, flags)
+#if defined(__NR_inotify_init1) && !defined(__NR_inotify_init)
+int inotify_init(void)
+{
+	return INLINE_SYSCALL(inotify_init1, 1, 0);
+}
+
+#elif defined(__NR_intofity_init)
+_syscall0(int, inotify_init)
 #endif
 
 #ifdef __NR_inotify_add_watch
