@@ -41,6 +41,7 @@ int fstatat(int fd, const char *file, struct stat *buf, int flag)
 	return ret;
 #endif /* __ARCH_HAS_DEPRECATED_SYSCALLS__ */
 }
+libc_hidden_def(fstatat)
 #else
 /* should add emulation with fstat() and /proc/self/fd/ ... */
 #endif
