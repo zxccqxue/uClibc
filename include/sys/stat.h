@@ -257,6 +257,7 @@ extern int __REDIRECT_NTH (fstatat, (int __fd, __const char *__restrict __file,
 extern int fstatat64 (int __fd, __const char *__restrict __file,
 		      struct stat64 *__restrict __buf, int __flag)
      __THROW __nonnull ((2, 3));
+libc_hidden_proto(fstatat64)
 # endif
 #endif
 
