@@ -44,10 +44,12 @@ struct kernel_dirent
 
 ssize_t __getdents (int fd, char *buf, size_t nbytes) attribute_hidden;
 
+#if defined(__NR_getdents)
 #define __NR___syscall_getdents __NR_getdents
 static __always_inline _syscall3(int, __syscall_getdents, int, fd, unsigned char *, kdirp, size_t, count)
+#endif
 
-#if defined __ASSUME_GETDENTS32_D_TYPE
+#if defined __ASSUME_GETDENTS32_D_TYPE && defined __NR_getdents
 
 ssize_t __getdents (int fd, char *buf, size_t nbytes)
 {
