@@ -18,7 +18,8 @@
 #include <bits/kernel_types.h>
 #include <bits/uClibc_alloc.h>
 
-#if defined __UCLIBC_HAS_LFS__ && defined __NR_getdents64
+#if (defined __UCLIBC_HAS_LFS__ && defined __NR_getdents64) || \
+	(defined __NR_getdents64 && !defined __NR_getdents)
 
 # ifndef offsetof
 #  define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
@@ -96,7 +97,7 @@ ssize_t __getdents64 (int fd, char *buf, size_t nbytes)
     return (char *) dp - buf;
 }
 
-#if __WORDSIZE == 64
+#if (__WORDSIZE == 64) || (!defined(__UCLIBC_HAS_LFS__) && !defined(__NR_getdents))
 /* since getdents doesnt give us d_type but getdents64 does, try and
  * use getdents64 as much as possible */
 attribute_hidden strong_alias(__getdents64,__getdents)
