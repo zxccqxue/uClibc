@@ -9,12 +9,22 @@
 
 #include <sys/syscall.h>
 
-#if defined __UCLIBC_HAS_LFS__ && defined __NR_lstat64
+#if defined __UCLIBC_HAS_LFS__
+# include <fcntl.h>
 # include <unistd.h>
 # include <sys/stat.h>
 # include "xstatconv.h"
 
 
+#if defined(__NR_fstatat64) && !defined(__NR_lstat64)
+int lstat64(const char *file_name, struct stat64 *buf)
+{
+	return fstatat64(AT_FDCWD, file_name, buf, AT_SYMLINK_NOFOLLOW);
+}
+libc_hidden_def(lstat64)
+
+/* For systems which have both, prefer the old one */
+#elif defined(__NR_lstat64)
 # define __NR___syscall_lstat64 __NR_lstat64
 static __inline__ _syscall2(int, __syscall_lstat64, const char *, file_name,
 		  struct kernel_stat64 *, buf)
@@ -33,3 +43,5 @@ int lstat64(const char *file_name, struct stat64 *buf)
 libc_hidden_def(lstat64)
 
 #endif
+
+#endif /* __UCLIBC_HAS_LFS__ */
