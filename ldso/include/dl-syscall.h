@@ -48,9 +48,18 @@ static __always_inline _syscall1(void, _dl_exit, int, status)
 #define __NR__dl_close __NR_close
 static __always_inline _syscall1(int, _dl_close, int, fd)
 
+#if defined(__NR_openat) && !defined(__NR_open)
+static __always_inline int _dl_open(const char *fn,
+						int flags, __kernel_mode_t mode)
+{
+	return INLINE_SYSCALL(openat, 4, AT_FDCWD, fn, flags, mode);
+}
+
+#elif defined(__NR_open)
 #define __NR__dl_open __NR_open
 static __always_inline _syscall3(int, _dl_open, const char *, fn, int, flags,
                         __kernel_mode_t, mode)
+#endif
 
 #define __NR__dl_write __NR_write
 static __always_inline _syscall3(unsigned long, _dl_write, int, fd,
@@ -64,12 +73,85 @@ static __always_inline _syscall3(unsigned long, _dl_read, int, fd,
 static __always_inline _syscall3(int, _dl_mprotect, const void *, addr,
                         unsigned long, len, int, prot)
 
+#if defined(__NR_fstatat64) && !defined(__NR_stat)
+static __always_inline int _dl_stat(const char *file_name,
+                        struct stat *buf)
+{
+	int ret;
+	struct kernel_stat64 kbuf;
+	size_t n;
+	register unsigned char *p;
+
+	ret = INLINE_SYSCALL(fstatat64, 4, AT_FDCWD, file_name, &kbuf, 0);
+
+	if (ret == 0) {
+		/* We have no libc so we need to implement our own memset */
+		n = sizeof(*buf);
+		p = buf;
+		while(n) {
+			*p++ = 0;
+			--n;
+		}
+		buf->st_dev = kbuf.st_dev;
+		buf->st_ino = kbuf.st_ino;
+		buf->st_mode = kbuf.st_mode;
+		buf->st_nlink = kbuf.st_nlink;
+		buf->st_uid = kbuf.st_uid;
+		buf->st_gid = kbuf.st_gid;
+		buf->st_rdev = kbuf.st_rdev;
+		buf->st_size = kbuf.st_size;
+		buf->st_blksize = kbuf.st_blksize;
+		buf->st_blocks = kbuf.st_blocks;
+		buf->st_atim = kbuf.st_atim;
+		buf->st_mtim = kbuf.st_mtim;
+		buf->st_ctim = kbuf.st_ctim;
+	}
+	return ret;
+}
+#elif defined(__NR_stat)
 #define __NR__dl_stat __NR_stat
 static __always_inline _syscall2(int, _dl_stat, const char *, file_name,
                         struct stat *, buf)
+#endif
 
+#if defined(__NR_fstat64) && !defined(__NR_fstat)
+static __always_inline int _dl_fstat(int fd, struct stat *buf)
+{
+	int result;
+	struct kernel_stat64 kbuf;
+	size_t n;
+	register unsigned char *p;
+
+	result = INLINE_SYSCALL(fstat64, 2, fd, &kbuf);
+
+	if (result == 0) {
+		/* We have no libc so we need to implement our own memset */
+		n = sizeof(*buf);
+		p = buf;
+		while(n) {
+			*p++ = 0;
+			--n;
+		}
+		buf->st_dev = kbuf.st_dev;
+		buf->st_ino = kbuf.st_ino;
+		buf->st_mode = kbuf.st_mode;
+		buf->st_nlink = kbuf.st_nlink;
+		buf->st_uid = kbuf.st_uid;
+		buf->st_gid = kbuf.st_gid;
+		buf->st_rdev = kbuf.st_rdev;
+		buf->st_size = kbuf.st_size;
+		buf->st_blksize = kbuf.st_blksize;
+		buf->st_blocks = kbuf.st_blocks;
+		buf->st_atim = kbuf.st_atim;
+		buf->st_mtim = kbuf.st_mtim;
+		buf->st_ctim = kbuf.st_ctim;
+	}
+	return result;
+}
+#elif defined(__NR_fstat)
 #define __NR__dl_fstat __NR_fstat
 static __always_inline _syscall2(int, _dl_fstat, int, fd, struct stat *, buf)
+#endif
 
 #define __NR__dl_munmap __NR_munmap
 static __always_inline _syscall2(int, _dl_munmap, void *, start, unsigned long, length)
@@ -104,9 +186,15 @@ static __always_inline _syscall0(gid_t, _dl_getegid)
 #define __NR__dl_getpid __NR_getpid
 static __always_inline _syscall0(gid_t, _dl_getpid)
 
+#if defined(__NR_readlinkat) && !defined(__NR_readlink)
+#define __NR__dl_readlink __NR_readlinkat
+static __always_inline _syscall4(int, _dl_readlink, int, id, const char *, path,
+						char *, buf, size_t, bufsiz)
+#elif defined(__NR_readlink)
 #define __NR__dl_readlink __NR_readlink
 static __always_inline _syscall3(int, _dl_readlink, const char *, path, char *, buf,
                         size_t, bufsiz)
+#endif
 
 #ifdef __NR_pread64
 #define __NR___syscall_pread __NR_pread64
