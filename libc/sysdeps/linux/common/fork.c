@@ -9,10 +9,24 @@
 
 #include <sys/syscall.h>
 #include <unistd.h>
+#include <signal.h>
 
 #ifdef __ARCH_USE_MMU__
 
-#ifdef __NR_fork
+#if defined(__NR_clone) && !defined(__NR_fork)
+pid_t __libc_fork(void)
+{
+	pid_t pid = INLINE_SYSCALL(clone, 4, SIGCHLD, NULL, NULL, NULL);
+
+	if (pid<0)
+		return -1;
+
+	return pid;
+}
+weak_alias(__libc_fork, fork)
+libc_hidden_weak(fork)
+
+#elif defined(__NR_fork)
 #define __NR___libc_fork __NR_fork
 extern __typeof(fork) __libc_fork;
 _syscall0(pid_t, __libc_fork)
