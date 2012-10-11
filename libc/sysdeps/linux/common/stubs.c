@@ -157,7 +157,8 @@ make_stub(getxattr)
 make_stub(init_module)
 #endif
 
-#if !defined __NR_inotify_init && defined __UCLIBC_LINUX_SPECIFIC__
+#if !defined __NR_inotify_init && !defined(__NR_inotify_init1) \
+	&& defined __UCLIBC_LINUX_SPECIFIC__
 make_stub(inotify_init)
 #endif
 
