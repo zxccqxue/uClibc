@@ -11,5 +11,14 @@
 #include <unistd.h>
 
 
+#if defined(__NR_ftruncate64) && !defined(__NR_ftruncate)
+int ftruncate(int fd, __off_t length)
+{
+	return ftruncate64(fd, length);
+}
+libc_hidden_def(ftruncate);
+
+#else
 _syscall2(int, ftruncate, int, fd, __off_t, length)
 libc_hidden_def(ftruncate)
+#endif
