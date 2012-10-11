@@ -81,7 +81,7 @@ make_stub(create_module)
 make_stub(delete_module)
 #endif
 
-#ifndef __NR_epoll_create
+#if !defined(__NR_epoll_create) && !defined(__NR_epoll_create1)
 make_stub(epoll_create)
 #endif
 
