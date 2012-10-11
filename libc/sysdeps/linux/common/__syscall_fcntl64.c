@@ -27,4 +27,9 @@ int fcntl64(int fd, int cmd, ...)
 	return (__syscall_fcntl64(fd, cmd, arg));
 }
 libc_hidden_def(fcntl64)
+
+#if !defined(__NR_fcntl)
+strong_alias(fcntl64, fcntl)
+#endif /* !__NR_fcntl__ */
+
 #endif
