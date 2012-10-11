@@ -19,6 +19,53 @@
 extern __typeof(fcntl) __libc_fcntl;
 libc_hidden_proto(__libc_fcntl)
 
+
+#if defined(__NR_fcntl64) && !defined (__NR_fcntl)
+
+int __libc_fcntl (int fd, int cmd, ...)
+{
+	va_list ap;
+	void *arg;
+
+	va_start (ap, cmd);
+	arg = va_arg (ap, void*);
+	va_end (ap);
+
+	return INLINE_SYSCALL(fcntl64, 3, fd, cmd, arg);
+}
+libc_hidden_def(__libc_fcntl)
+
+int __fcntl_nocancel (int fd, int cmd, ...)
+{
+	va_list ap;
+	void *arg;
+
+	va_start (ap, cmd);
+	arg = va_arg (ap, void*);
+	va_end (ap);
+
+#ifdef __UCLIBC_HAS_THREADS_NATIVE__
+	if (SINGLE_THREAD_P)
+		return INLINE_SYSCALL(fcntl64, 3, fd, cmd, arg);
+
+	int oldtype = LIBC_CANCEL_ASYNC ();
+
+	int result = INLINE_SYSCALL(fcntl64, 3, fd, cmd, arg);
+
+	LIBC_CANCEL_RESET (oldtype);
+
+	return result;
+
+#else
+
+	return INLINE_SYSCALL (fcntl64, 3, fd, cmd, arg);
+
+#endif
+}
+libc_hidden_def(__fcntl_nocancel)
+
+#else
+
 int __fcntl_nocancel (int fd, int cmd, ...)
 {
 	va_list ap;
@@ -70,7 +117,9 @@ int __libc_fcntl (int fd, int cmd, ...)
 	LIBC_CANCEL_RESET (oldtype);
 
 	return result;
-#else
+
+#else /* __UCLIBC_HAS_THREADS_NATIVE__ */
+
 # if __WORDSIZE == 32
 	if (cmd == F_GETLK64 || cmd == F_SETLK64 || cmd == F_SETLKW64) {
 #  if defined __UCLIBC_HAS_LFS__ && defined __NR_fcntl64
@@ -80,11 +129,13 @@ int __libc_fcntl (int fd, int cmd, ...)
 		return -1;
 #  endif
 	}
-# endif
+# endif /* __WORDSIZE */
 	return INLINE_SYSCALL (fcntl, 3, fd, cmd, arg);
-#endif
+#endif /* __UCLIBC_HAS_THREADS_NATIVE__ */
 }
 libc_hidden_def(__libc_fcntl)
+
+#endif
 
 libc_hidden_proto(fcntl)
 weak_alias(__libc_fcntl,fcntl)
