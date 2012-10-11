@@ -64,5 +64,5 @@ int truncate64(const char * path, __off64_t length)
 }
 
 #endif /* __NR_truncate64 */
-
+libc_hidden_def(truncate64)
 #endif /* __UCLIBC_HAS_LFS__ */
