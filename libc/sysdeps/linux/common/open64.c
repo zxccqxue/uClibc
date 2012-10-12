@@ -34,11 +34,18 @@ int open64 (const char *file, int oflag, ...)
 
 #ifdef __UCLIBC_HAS_THREADS_NATIVE__
   if (SINGLE_THREAD_P)
+#if defined(__NR_openat) && !defined(__NR_open)
+    return INLINE_SYSCALL (openat, 4, AT_FDCWD, file, oflag | O_LARGEFILE, mode);
+#else
     return INLINE_SYSCALL (open, 3, file, oflag | O_LARGEFILE, mode);
+#endif
 
   int oldtype = LIBC_CANCEL_ASYNC ();
-
+#if defined(__NR_openat) && !defined(__NR_open)
+  int result = INLINE_SYSCALL (openat, 4, AT_FDCWD, file, oflag | O_LARGEFILE, mode);
+#else
   int result = INLINE_SYSCALL (open, 3, file, oflag | O_LARGEFILE, mode);
+#endif
 
   LIBC_CANCEL_RESET (oldtype);
 
