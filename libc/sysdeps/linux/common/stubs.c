@@ -396,6 +396,10 @@ make_stub(umount2)
 make_stub(unshare)
 #endif
 
+#if !defined __NR_ustat
+make_stub(ustat)
+#endif
+
 #ifndef __NR_utimensat
 make_stub(futimens)
 make_stub(utimensat)
