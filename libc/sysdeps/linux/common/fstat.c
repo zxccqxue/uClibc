@@ -12,6 +12,24 @@
 #include <sys/stat.h>
 #include "xstatconv.h"
 
+#if defined(__NR_fstat64) && !defined(__NR_fstat)
+int fstat(int fd, struct stat *buf)
+{
+	int result = INLINE_SYSCALL(fstat64, 2, fd, buf);
+	if (result == 0) {
+		/* Did we overflow? */
+		if (buf->__pad1 || buf->__pad2 || buf->__pad3
+		    || buf->__pad4 || buf->__pad5
+		    || buf->__pad6 || buf->__pad7) {
+			__set_errno(EOVERFLOW);
+			return -1;
+		}
+	}
+	return result;
+}
+libc_hidden_def(fstat)
+
+#elif defined(__NR_fstat)
 int fstat(int fd, struct stat *buf)
 {
 	int result;
@@ -38,7 +56,9 @@ int fstat(int fd, struct stat *buf)
 }
 libc_hidden_def(fstat)
 
-#if ! defined __NR_fstat64 && defined __UCLIBC_HAS_LFS__
+#if ! defined (__NR_fstat64) && defined __UCLIBC_HAS_LFS__
 strong_alias_untyped(fstat,fstat64)
 libc_hidden_def(fstat64)
+#endif
+
 #endif
