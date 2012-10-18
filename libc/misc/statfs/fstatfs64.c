@@ -23,8 +23,10 @@
 #include <string.h>
 #include <sys/statfs.h>
 #include <sys/statvfs.h>
+#include <sys/syscall.h>
 #include <stddef.h>
 
+#if defined(__NR_fstatfs)
 extern __typeof(fstatfs) __libc_fstatfs;
 
 /* Return information about the filesystem on which FD resides.  */
@@ -48,4 +50,16 @@ int fstatfs64 (int fd, struct statfs64 *buf)
 
     return 0;
 }
+#else
+/*
+ * Use the fstatfs64 system call if fstatfs is not defined
+ * This is for backwards compatibility and it should be
+ * made default in the future
+ */
+int fstatfs64(int fd, struct statfs64 *buf)
+{
+	/* Signature has 2 arguments but syscalls wants 3 */
+	return INLINE_SYSCALL(fstatfs64, 3, fd, sizeof(*buf), buf);
+}
+#endif
 libc_hidden_def(fstatfs64)
