@@ -77,7 +77,7 @@ librt_linux_CSRC += mq_notify.c timer_create.c timer_delete.c		\
 	timer_settime.c
 
 # These provide both a cancellable and a not cancellable implementation
-libc_linux_SSRC = close.S open.S write.S read.S waitpid.S
+libc_linux_SSRC = close.S open.S openat.S write.S read.S waitpid.S
 libc_linux_SSRC := $(filter-out $(libc_linux_arch_SSRC-OMIT),$(libc_linux_SSRC))
 
 libpthread_linux_CSRC := $(filter-out $(notdir $(libpthread_linux_arch_OBJS:.o=.c)),$(libpthread_linux_CSRC))
@@ -145,6 +145,7 @@ CFLAGS-OMIT-libc-lowlevellock.c = -DNOT_IN_libc -DIS_IN_libpthread
 
 CFLAGS-OMIT-close.S = -DNOT_IN_libc -DIS_IN_libpthread
 CFLAGS-OMIT-open.S = -DNOT_IN_libc -DIS_IN_libpthread
+CFLAGS-OMIT-openat.S = -DNOT_IN_libc -DIS_IN_libpthread
 CFLAGS-OMIT-read.S = -DNOT_IN_libc -DIS_IN_libpthread
 CFLAGS-OMIT-write.S = -DNOT_IN_libc -DIS_IN_libpthread
 CFLAGS-OMIT-waitpid.S = -DNOT_IN_libc -DIS_IN_libpthread
@@ -158,6 +159,7 @@ CFLAGS-OMIT-timer_routines.c = -DIS_IN_libpthread
 CFLAGS-OMIT-timer_settime.c = -DIS_IN_libpthread
 
 ASFLAGS-open.S = -D_LIBC_REENTRANT
+ASFLAGS-openat.S = -D_LIBC_REENTRANT
 ASFLAGS-close.S = -D_LIBC_REENTRANT
 ASFLAGS-read.S = -D_LIBC_REENTRANT
 ASFLAGS-write.S = -D_LIBC_REENTRANT
