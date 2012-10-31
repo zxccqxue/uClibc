@@ -87,5 +87,15 @@ int __libc_epoll_pwait(int epfd, struct epoll_event *events, int maxevents,
 	}
 # endif
 }
+/*
+ * If epoll_wait is not defined, then call epoll_pwait instead using NULL
+ * for sigmask argument
+ */
+#if !defined(__NR_epoll_wait)
+int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
+{
+	return INLINE_SYSCALL(epoll_pwait, 5, epfd, events, maxevents, timeout, NULL);
+}
+#endif
 weak_alias(__libc_epoll_pwait, epoll_pwait)
 #endif
