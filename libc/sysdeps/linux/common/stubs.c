@@ -89,7 +89,7 @@ make_stub(epoll_create)
 make_stub(epoll_ctl)
 #endif
 
-#ifndef __NR_epoll_wait
+#if !defined(__NR_epoll_wait) && !defined(__NR_epoll_pwait)
 make_stub(epoll_wait)
 #endif
 
