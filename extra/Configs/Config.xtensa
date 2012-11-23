@@ -6,3 +6,9 @@
 config TARGET_ARCH
 	string
 	default "xtensa"
+	select ARCH_HAS_DEPRECATED_SYSCALLS
+
+config FORCE_OPTIONS_FOR_ARCH
+	bool
+	default y
+	select ARCH_HAS_DEPRECATED_SYSCALLS
