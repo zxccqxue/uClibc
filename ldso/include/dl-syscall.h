@@ -23,7 +23,7 @@ extern int _dl_errno;
 /* Pull in whatever this particular arch's kernel thinks the kernel version of
  * struct stat should look like.  It turns out that each arch has a different
  * opinion on the subject, and different kernel revs use different names... */
-#if defined(__sparc_v9__) && (__WORDSIZE == 64)
+#if !defined(__NR_stat) || (defined(__sparc_v9__) && (__WORDSIZE == 64))
 #define kernel_stat64 stat
 #else
 #define kernel_stat stat
@@ -74,39 +74,14 @@ static __always_inline _syscall3(int, _dl_mprotect, const void *, addr,
                         unsigned long, len, int, prot)
 
 #if defined(__NR_fstatat64) && !defined(__NR_stat)
+#define __NR__dl_fstatat64 __NR_fstatat64
+static __always_inline _syscall4(int, _dl_fstatat64, int, fd, const char *,
+				 fn, struct stat *, stat, int, flags)
+
 static __always_inline int _dl_stat(const char *file_name,
                         struct stat *buf)
 {
-	int ret;
-	struct kernel_stat64 kbuf;
-	size_t n;
-	register unsigned char *p;
-
-	ret = INLINE_SYSCALL(fstatat64, 4, AT_FDCWD, file_name, &kbuf, 0);
-
-	if (ret == 0) {
-		/* We have no libc so we need to implement our own memset */
-		n = sizeof(*buf);
-		p = buf;
-		while(n) {
-			*p++ = 0;
-			--n;
-		}
-		buf->st_dev = kbuf.st_dev;
-		buf->st_ino = kbuf.st_ino;
-		buf->st_mode = kbuf.st_mode;
-		buf->st_nlink = kbuf.st_nlink;
-		buf->st_uid = kbuf.st_uid;
-		buf->st_gid = kbuf.st_gid;
-		buf->st_rdev = kbuf.st_rdev;
-		buf->st_size = kbuf.st_size;
-		buf->st_blksize = kbuf.st_blksize;
-		buf->st_blocks = kbuf.st_blocks;
-		buf->st_atim = kbuf.st_atim;
-		buf->st_mtim = kbuf.st_mtim;
-		buf->st_ctim = kbuf.st_ctim;
-	}
-	return ret;
+	return _dl_fstatat64(AT_FDCWD, file_name, buf, 0);
 }
 #elif defined(__NR_stat)
 #define __NR__dl_stat __NR_stat
@@ -115,43 +90,11 @@ static __always_inline _syscall2(int, _dl_stat, const char *, file_name,
 #endif
 
 #if defined(__NR_fstat64) && !defined(__NR_fstat)
-static __always_inline int _dl_fstat(int fd, struct stat *buf)
-{
-	int result;
-	struct kernel_stat64 kbuf;
-	size_t n;
-	register unsigned char *p;
-
-	result = INLINE_SYSCALL(fstat64, 2, fd, &kbuf);
-
-	if (result == 0) {
-		/* We have no libc so we need to implement our own memset */
-		n = sizeof(*buf);
-		p = buf;
-		while(n) {
-			*p++ = 0;
-			--n;
-		}
-		buf->st_dev = kbuf.st_dev;
-		buf->st_ino = kbuf.st_ino;
-		buf->st_mode = kbuf.st_mode;
-		buf->st_nlink = kbuf.st_nlink;
-		buf->st_uid = kbuf.st_uid;
-		buf->st_gid = kbuf.st_gid;
-		buf->st_rdev = kbuf.st_rdev;
-		buf->st_size = kbuf.st_size;
-		buf->st_blksize = kbuf.st_blksize;
-		buf->st_blocks = kbuf.st_blocks;
-		buf->st_atim = kbuf.st_atim;
-		buf->st_mtim = kbuf.st_mtim;
-		buf->st_ctim = kbuf.st_ctim;
-	}
-	return result;
-}
+#define __NR__dl_fstat __NR_fstat64
 #elif defined(__NR_fstat)
 #define __NR__dl_fstat __NR_fstat
-static __always_inline _syscall2(int, _dl_fstat, int, fd, struct stat *, buf)
 #endif
+static __always_inline _syscall2(int, _dl_fstat, int, fd, struct stat *, buf)
 
 #define __NR__dl_munmap __NR_munmap
 static __always_inline _syscall2(int, _dl_munmap, void *, start, unsigned long, length)

@@ -17,25 +17,16 @@ extern __typeof(statfs) __libc_statfs attribute_hidden;
 
 int __libc_statfs(const char *path, struct statfs *buf)
 {
-	struct statfs64 b;
-	int err;
+	int err = INLINE_SYSCALL(statfs64, 3, path, sizeof(*buf), buf);
 
-	err = INLINE_SYSCALL(statfs64, 3, path, sizeof(b), &b);
-
-	if (err < 0)
-		return -1;
-
-	buf->f_type = b.f_type;
-	buf->f_bsize = b.f_bsize;
-	buf->f_blocks = b.f_blocks;
-	buf->f_bfree = b.f_bfree;
-	buf->f_bavail = b.f_bavail;
-	buf->f_files = b.f_files;
-	buf->f_ffree = b.f_ffree;
-	buf->f_namelen = b.f_namelen;
-	buf->f_frsize = b.f_frsize;
-	buf->f_fsid = b.f_fsid;
-	memcpy(buf->f_spare, b.f_spare, sizeof(b.f_spare));
+	if (err == 0) {
+		/* Did we overflow ? */
+		if (buf->__pad1 || buf->__pad2 || buf->__pad3 ||
+		    buf->__pad4 || buf->__pad5) {
+			__set_errno(EOVERFLOW);
+			return -1;
+		}
+	}
 
 	return err;
 }
